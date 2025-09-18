@@ -22,11 +22,23 @@ WHERE salary > 50000;`);
       return;
     }
 
+    // Show warning about API limitations
     toast({
-      title: "Query Submitted",
-      description: "Your PostgreSQL query has been submitted for evaluation.",
-      className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0",
+      title: "⚠️ API Limitation Notice",
+      description: "Evaluation results may not always be consistent because the free-tier Gemini API has token limits and may generate hallucinations.",
+      className: "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 [&_*]:text-white",
+      duration: 6000,
     });
+
+    // Show query submitted confirmation
+    setTimeout(() => {
+      toast({
+        title: "Query Submitted",
+        description: "Your PostgreSQL query has been submitted for evaluation.",
+        className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 [&_*]:text-white",
+        duration: 4000,
+      });
+    }, 500);
   };
 
   const handleClear = () => {
