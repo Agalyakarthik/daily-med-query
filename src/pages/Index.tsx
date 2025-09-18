@@ -2,6 +2,7 @@ import QueryOfTheDay from "@/components/QueryOfTheDay";
 import SubscriptionForm from "@/components/SubscriptionForm";
 import DatasetDownload from "@/components/DatasetDownload";
 import AboutProject from "@/components/AboutProject";
+import PostgreSQLEditor from "@/components/PostgreSQLEditor";
 import { Stethoscope } from "lucide-react";
 
 const Index = () => {
@@ -31,8 +32,9 @@ const Index = () => {
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-8 relative">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Query of the Day (spans 2 columns) */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
             <QueryOfTheDay />
+            <PostgreSQLEditor />
           </div>
 
           {/* Right Column - Subscription & Dataset (spans 1 column) */}
