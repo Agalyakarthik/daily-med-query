@@ -178,79 +178,73 @@ const QueryOfTheDay = () => {
             </section>
             
             {/* Answer Section */}
-            {showAnswer ? (
-              <section 
-                className="animate-fade-in"
-                role="article"
-                aria-labelledby="answer-heading"
+            <section 
+              role="article"
+              aria-labelledby="answer-heading"
+              className="space-y-6"
+            >
+              <h3 
+                id="answer-heading"
+                className="text-lg font-semibold text-white mb-6 flex items-center gap-2"
               >
-                <h3 
-                  id="answer-heading"
-                  className="text-lg font-semibold text-white mb-4 flex items-center gap-2"
-                >
+                {showAnswer ? (
                   <CheckCircle className="h-5 w-5 text-green-400" />
-                  Expert Analysis & Answer
-                </h3>
-                <div className="bg-slate-700/50 border border-slate-600 p-6 rounded-xl">
-                  <p className="text-slate-200 leading-relaxed">
+                ) : (
+                  <Clock className="h-5 w-5 text-slate-400 animate-pulse" />
+                )}
+                Expert Analysis & Answer
+              </h3>
+              
+              {/* Answer/Placeholder Content */}
+              <div className="bg-slate-700/50 border border-slate-600 p-6 rounded-xl min-h-[120px] flex items-center">
+                {showAnswer ? (
+                  <p className="text-slate-200 leading-relaxed animate-fade-in">
                     {answer}
                   </p>
-                </div>
-              </section>
-            ) : (
-              <section 
-                role="article"
-                aria-labelledby="waiting-heading"
-              >
-                <h3 
-                  id="waiting-heading"
-                  className="text-lg font-semibold text-white mb-4 flex items-center gap-2"
-                >
-                  <Clock className="h-5 w-5 text-slate-400 animate-pulse" />
-                  Expert Analysis & Answer
-                </h3>
-                <div className="bg-slate-700/30 border border-slate-600 p-6 rounded-xl">
+                ) : (
                   <p className="text-slate-400">
                     The detailed answer and clinical explanation will be revealed here at 8:00 PM daily.
                   </p>
-                </div>
-                
-                {/* Countdown Timer */}
-                {!timeUntil8PM.isTime && (
-                  <div className="mt-6 bg-slate-700/30 border border-slate-600 p-4 rounded-xl">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Timer className="h-5 w-5 text-blue-400" />
-                      <span className="text-white font-medium">Time until answer reveal:</span>
+                )}
+              </div>
+              
+              {/* Countdown Timer - only show when answer not revealed */}
+              {!showAnswer && !timeUntil8PM.isTime && (
+                <div className="bg-gradient-to-r from-slate-700/40 to-slate-600/40 border border-slate-500/50 p-5 rounded-xl backdrop-blur-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Timer className="h-5 w-5 text-blue-400" />
+                    <span className="text-white font-medium">Time until answer reveal:</span>
+                  </div>
+                  <div className="flex gap-6 justify-center">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-400 mb-1">
+                        {timeUntil8PM.hours.toString().padStart(2, '0')}
+                      </div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide">Hours</div>
                     </div>
-                    <div className="flex gap-4 justify-center">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-400">
-                          {timeUntil8PM.hours.toString().padStart(2, '0')}
-                        </div>
-                        <div className="text-xs text-slate-400">Hours</div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-400 mb-1">
+                        {timeUntil8PM.minutes.toString().padStart(2, '0')}
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-400">
-                          {timeUntil8PM.minutes.toString().padStart(2, '0')}
-                        </div>
-                        <div className="text-xs text-slate-400">Minutes</div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide">Minutes</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-400 mb-1">
+                        {timeUntil8PM.seconds.toString().padStart(2, '0')}
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-400">
-                          {timeUntil8PM.seconds.toString().padStart(2, '0')}
-                        </div>
-                        <div className="text-xs text-slate-400">Seconds</div>
-                      </div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide">Seconds</div>
                     </div>
                   </div>
-                )}
-                
-                {/* PostgreSQL Editor */}
-                <div className={`mt-6 transition-all duration-500 ${editorVisible && !showAnswer ? 'opacity-100 animate-fade-in' : 'opacity-0 animate-fade-out'}`}>
-                  {editorVisible && !showAnswer && <PostgreSQLEditor />}
                 </div>
-              </section>
-            )}
+              )}
+              
+              {/* PostgreSQL Editor - only show when answer not revealed */}
+              {!showAnswer && (
+                <div className={`transition-all duration-500 ${editorVisible ? 'opacity-100 animate-fade-in' : 'opacity-0 animate-fade-out'}`}>
+                  {editorVisible && <PostgreSQLEditor />}
+                </div>
+              )}
+            </section>
           </div>
         ) : (
           <section 
