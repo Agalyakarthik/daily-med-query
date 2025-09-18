@@ -36,7 +36,7 @@ const PostgreSQLReference = () => {
         <div className="space-y-3">
           <Button 
             onClick={handleSyntaxGuide}
-            className="w-full bg-gradient-to-r from-blue-600 to-cyan-400 hover:from-blue-700 hover:to-cyan-500 text-white font-medium py-3 border-0 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 border-0 flex items-center justify-center gap-2"
           >
             <Download className="h-4 w-4" />
             Download Syntax Guide
@@ -44,7 +44,7 @@ const PostgreSQLReference = () => {
           
           <Button 
             onClick={handleOptimizationTips}
-            className="w-full bg-gradient-to-r from-blue-600 to-cyan-400 hover:from-blue-700 hover:to-cyan-500 text-white font-medium py-3 border-0 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 border-0 flex items-center justify-center gap-2"
           >
             <Download className="h-4 w-4" />
             Download Optimization Tips
