@@ -10,7 +10,25 @@ const PostgreSQLEditor = () => {
   const [query, setQuery] = useState(`SELECT id, name, salary
 FROM employees
 WHERE salary > 50000;`);
+  const [warningToast, setWarningToast] = useState<any>(null);
+  const [hasStartedTyping, setHasStartedTyping] = useState(false);
   const { toast } = useToast();
+
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
+    
+    // Show warning toast when user starts typing for the first time
+    if (!hasStartedTyping && value.trim() !== '' && !warningToast) {
+      setHasStartedTyping(true);
+      const newWarningToast = toast({
+        title: "⚠️ API Limitation Notice",
+        description: "Evaluation results may not always be consistent because the free-tier Gemini API has token limits and may generate hallucinations.",
+        className: "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 [&_*]:text-white",
+        duration: Infinity, // Persist until manually dismissed
+      });
+      setWarningToast(newWarningToast);
+    }
+  };
 
   const handleSubmit = () => {
     if (!query.trim()) {
@@ -22,17 +40,14 @@ WHERE salary > 50000;`);
       return;
     }
 
-    // Show warning about API limitations (persists until solution is submitted)
-    const warningToast = toast({
-      title: "⚠️ API Limitation Notice",
-      description: "Evaluation results may not always be consistent because the free-tier Gemini API has token limits and may generate hallucinations.",
-      className: "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 [&_*]:text-white",
-      duration: Infinity, // Persist until manually dismissed
-    });
+    // Dismiss the warning toast if it exists
+    if (warningToast) {
+      warningToast.dismiss();
+      setWarningToast(null);
+    }
 
-    // Show query submitted confirmation and dismiss warning
+    // Show query submitted confirmation
     setTimeout(() => {
-      warningToast.dismiss(); // Dismiss the warning toast
       toast({
         title: "Query Submitted",
         description: "Your PostgreSQL query has been submitted for evaluation.",
@@ -62,7 +77,7 @@ WHERE salary > 50000;`);
         <div className="relative">
           <CodeMirror
             value={query}
-            onChange={(value) => setQuery(value)}
+            onChange={handleQueryChange}
             extensions={[sql()]}
             theme={oneDark}
             placeholder="-- Write your query here"
