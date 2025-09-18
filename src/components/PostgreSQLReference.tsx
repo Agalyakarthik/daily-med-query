@@ -26,7 +26,7 @@ const PostgreSQLReference = () => {
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <Database className="h-5 w-5 text-cyan-400" />
-            <h3 className="text-lg font-semibold text-cyan-300">PostgreSQL Reference</h3>
+            <h3 className="text-lg font-semibold text-white">PostgreSQL Reference</h3>
           </div>
           <p className="text-slate-400 text-sm">
             Access quick guides and resources for PostgreSQL syntax functions and optimization.
