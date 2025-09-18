@@ -28,21 +28,17 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 lg:items-start">
-          {/* Left Column - Query of the Day (spans 3 columns) */}
-          <div className="lg:col-span-3 order-1 lg:order-1">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          {/* Left Column - Query of the Day (spans 8 columns) */}
+          <div className="lg:col-span-8 order-1">
             <QueryOfTheDay />
           </div>
 
-          {/* Right Column - Subscription & Dataset (spans 2 columns) */}
-          <div className="lg:col-span-2 order-2 lg:order-2 flex flex-col gap-6 lg:h-full">
-            <div className="flex-1">
-              <SubscriptionForm />
-            </div>
-            <div className="flex-1">
-              <DatasetDownload />
-            </div>
+          {/* Right Column - Subscription & Dataset (spans 4 columns) */}
+          <div className="lg:col-span-4 order-2 flex flex-col gap-6">
+            <SubscriptionForm />
+            <DatasetDownload />
           </div>
         </div>
       </main>
