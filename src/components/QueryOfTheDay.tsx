@@ -1,14 +1,16 @@
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
-import { Clock, CheckCircle, Brain, Loader2 } from "lucide-react";
+import { Clock, CheckCircle, Brain, Loader2, Timer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BASE_URL } from "@/config";
+import PostgreSQLEditor from "@/components/PostgreSQLEditor";
 
 const QueryOfTheDay = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
+  const [editorVisible, setEditorVisible] = useState(true);
   const { toast } = useToast();
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState(null);
@@ -42,7 +44,7 @@ const QueryOfTheDay = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 60000); // Update every minute
+    }, 1000); // Update every second for countdown
 
     // Simulate loading and then show content with animation
     const loadingTimer = setTimeout(() => {
@@ -57,25 +59,53 @@ const QueryOfTheDay = () => {
   }, []);
 
   const currentHour = currentTime.getHours();
-  const showAnswer = currentHour >= 19; // 8 PM or later
+  const showAnswer = currentHour >= 20; // 8 PM or later
   const showQuery = currentHour >= 9; // 9 AM or later
 
-  // Show toast when answer is revealed
+  // Calculate time until 8 PM
+  const getTimeUntil8PM = () => {
+    const now = new Date();
+    const today8PM = new Date();
+    today8PM.setHours(20, 0, 0, 0);
+    
+    // If it's already past 8 PM, get tomorrow's 8 PM
+    if (now >= today8PM) {
+      today8PM.setDate(today8PM.getDate() + 1);
+    }
+    
+    const timeDiff = today8PM.getTime() - now.getTime();
+    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+    
+    return { hours, minutes, seconds, isTime: timeDiff <= 0 };
+  };
+
+  const timeUntil8PM = getTimeUntil8PM();
+
+  // Show toast when answer is revealed and handle editor transition
   useEffect(() => {
     if (showAnswer && !answerRevealed && !isLoading) {
       setAnswerRevealed(true);
-      const timeString = currentTime.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      });
       
-      toast({
-        title: "✓ Answer Revealed",
-        description: timeString,
-        className: "bg-gradient-to-r from-blue-500 to-purple-500 border-none text-white [&_*]:text-white",
-        duration: 5000,
-      });
+      // Fade out editor first
+      setEditorVisible(false);
+      
+      // Show toast after a delay
+      setTimeout(() => {
+        const timeString = currentTime.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        
+        toast({
+          title: "✓ Answer Revealed",
+          description: timeString,
+          className: "bg-gradient-to-r from-blue-500 to-purple-500 border-none text-white [&_*]:text-white",
+          duration: 5000,
+        });
+      }, 500);
     }
   }, [showAnswer, answerRevealed, isLoading, currentTime, toast]);
   
@@ -183,6 +213,41 @@ const QueryOfTheDay = () => {
                   <p className="text-slate-400">
                     The detailed answer and clinical explanation will be revealed here at 8:00 PM daily.
                   </p>
+                </div>
+                
+                {/* Countdown Timer */}
+                {!timeUntil8PM.isTime && (
+                  <div className="mt-6 bg-slate-700/30 border border-slate-600 p-4 rounded-xl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Timer className="h-5 w-5 text-blue-400" />
+                      <span className="text-white font-medium">Time until answer reveal:</span>
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {timeUntil8PM.hours.toString().padStart(2, '0')}
+                        </div>
+                        <div className="text-xs text-slate-400">Hours</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {timeUntil8PM.minutes.toString().padStart(2, '0')}
+                        </div>
+                        <div className="text-xs text-slate-400">Minutes</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {timeUntil8PM.seconds.toString().padStart(2, '0')}
+                        </div>
+                        <div className="text-xs text-slate-400">Seconds</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* PostgreSQL Editor */}
+                <div className={`mt-6 transition-all duration-500 ${editorVisible && !showAnswer ? 'opacity-100 animate-fade-in' : 'opacity-0 animate-fade-out'}`}>
+                  {editorVisible && !showAnswer && <PostgreSQLEditor />}
                 </div>
               </section>
             )}
