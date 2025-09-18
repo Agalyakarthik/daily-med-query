@@ -1,6 +1,7 @@
 import QueryOfTheDay from "@/components/QueryOfTheDay";
 import SubscriptionForm from "@/components/SubscriptionForm";
 import DatasetDownload from "@/components/DatasetDownload";
+import PostgreSQLReference from "@/components/PostgreSQLReference";
 import AboutProject from "@/components/AboutProject";
 import { Stethoscope } from "lucide-react";
 
@@ -39,6 +40,7 @@ const Index = () => {
           <div className="lg:col-span-4 order-2 flex flex-col gap-6">
             <SubscriptionForm />
             <DatasetDownload />
+            <PostgreSQLReference />
           </div>
         </div>
       </main>
