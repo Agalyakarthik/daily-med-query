@@ -21,14 +21,14 @@ const PostgreSQLReference = () => {
   };
 
   return (
-    <Card className="p-6 bg-slate-800 border border-slate-700 rounded-2xl">
+    <Card className="p-6 bg-card border border-border rounded-2xl">
       <div className="space-y-6">
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <Database className="h-5 w-5 text-blue-400" />
-            <h3 className="text-lg font-semibold text-white">PostgreSQL Reference</h3>
+            <Database className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-card-foreground">PostgreSQL Reference</h3>
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             Access quick guides and resources for PostgreSQL syntax functions and optimization.
           </p>
         </div>
@@ -36,7 +36,7 @@ const PostgreSQLReference = () => {
         <div className="space-y-3">
           <Button 
             onClick={handleSyntaxGuide}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 border-0 flex items-center justify-center gap-2 shadow-lg"
+            className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-medium py-3 border-0 flex items-center justify-center gap-2 shadow-lg"
           >
             <Download className="h-4 w-4" />
             Download Syntax Guide
@@ -44,7 +44,7 @@ const PostgreSQLReference = () => {
           
           <Button 
             onClick={handleOptimizationTips}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 border-0 flex items-center justify-center gap-2 shadow-lg"
+            className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-medium py-3 border-0 flex items-center justify-center gap-2 shadow-lg"
           >
             <Download className="h-4 w-4" />
             Download Optimization Tips
@@ -52,7 +52,8 @@ const PostgreSQLReference = () => {
 
           <Button 
             onClick={handleSetupGuide}
-            className="w-full py-3 flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white"
+            variant="secondary"
+            className="w-full py-3 flex items-center justify-center gap-2"
           >
             <BookOpen className="h-4 w-4" />
             Setup Guide
@@ -60,7 +61,8 @@ const PostgreSQLReference = () => {
 
           <Button 
             onClick={handleCommunityDetails}
-            className="w-full py-3 flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white"
+            variant="secondary"
+            className="w-full py-3 flex items-center justify-center gap-2"
           >
             <Users className="h-4 w-4" />
             Community Details
