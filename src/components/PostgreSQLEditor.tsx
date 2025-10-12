@@ -5,164 +5,162 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle } from 'lucide-react';
-import SQLEvaluationModal from './SQLEvaluationModal';
+import { Loader2, CheckCircle, Sparkles, Heart } from 'lucide-react';
+import { BASE_URL } from '@/config';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 type ButtonState = 'default' | 'loading' | 'completed' | 'disabled';
 
-interface EvaluationResult {
-  score: number;
-  level: 'perfect' | 'nearly' | 'good' | 'keep-going';
-  title: string;
-  message: string;
-  checklist: Array<{
-    requirement: string;
-    met: boolean;
-    hint?: string;
-  }>;
+interface MCQOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
 }
 
-const PostgreSQLEditor = () => {
-  const [query, setQuery] = useState(`SELECT id, name, salary
-FROM employees
-WHERE salary > 50000;`);
-  const [warningToast, setWarningToast] = useState<any>(null);
-  const [hasStartedTyping, setHasStartedTyping] = useState(false);
+interface MCQ {
+  question: string;
+  options: MCQOption[];
+  explanation: string;
+}
+
+interface MCQResponse {
+  mcqs: MCQ[];
+}
+
+interface PostgreSQLEditorProps {
+  question?: string;
+}
+
+const PostgreSQLEditor = ({ question = "Default medical query" }: PostgreSQLEditorProps) => {
+  const [query, setQuery] = useState('');
   const [buttonState, setButtonState] = useState<ButtonState>('default');
-  const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
-  const [showResultModal, setShowResultModal] = useState(false);
+  const [mcqs, setMcqs] = useState<MCQ[]>([]);
+  const [userAnswers, setUserAnswers] = useState<{ [key: number]: string }>({});
+  const [showMcqs, setShowMcqs] = useState(false);
+  const [submittedAnswers, setSubmittedAnswers] = useState(false);
   const { toast } = useToast();
-
-  // Mock SQL parser to evaluate query
-  const evaluateQuery = (sqlQuery: string): EvaluationResult => {
-    const upperQuery = sqlQuery.toUpperCase().trim();
-    const checklist = [
-      {
-        requirement: "Uses SELECT statement",
-        met: upperQuery.includes('SELECT'),
-        hint: "Start your query with SELECT to retrieve data"
-      },
-      {
-        requirement: "Includes FROM clause",
-        met: upperQuery.includes('FROM'),
-        hint: "Specify which table to query using FROM tablename"
-      },
-      {
-        requirement: "Has WHERE condition",
-        met: upperQuery.includes('WHERE'),
-        hint: "Add WHERE clause to filter results based on conditions"
-      },
-      {
-        requirement: "Uses AVG() function",
-        met: upperQuery.includes('AVG('),
-        hint: "Try using AVG(column_name) to calculate average values"
-      },
-      {
-        requirement: "Includes column aliases",
-        met: upperQuery.includes(' AS ') || /\w+\s+\w+(?:\s|$)/.test(upperQuery),
-        hint: "Use AS keyword or spaces to give columns readable names"
-      }
-    ];
-
-    const metCount = checklist.filter(item => item.met).length;
-    const score = (metCount / checklist.length) * 100;
-
-    let level: EvaluationResult['level'];
-    let title: string;
-    let message: string;
-
-    if (score === 100) {
-      level = 'perfect';
-      title = 'Perfect Solution';
-      message = 'Outstanding work! Your query meets all requirements and demonstrates excellent SQL skills.';
-    } else if (score >= 80) {
-      level = 'nearly';
-      title = 'Nearly There';
-      message = 'Great progress! Just a few small adjustments and your query will be perfect.';
-    } else if (score >= 60) {
-      level = 'good';
-      title = 'Good Start';
-      message = 'You\'re on the right track! Keep building on this foundation.';
-    } else {
-      level = 'keep-going';
-      title = 'Keep Going';
-      message = 'Don\'t give up! Review the requirements and try again. You\'ve got this!';
-    }
-
-    return { score, level, title, message, checklist };
-  };
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
-    
-    // Reset button state when query changes (if not already submitted)
-    if (buttonState === 'completed' || buttonState === 'disabled') {
-      // Don't reset if already submitted
-      return;
-    }
-    
-    // Show warning toast when user starts typing for the first time
-    if (!hasStartedTyping && value.trim() !== '' && !warningToast) {
-      setHasStartedTyping(true);
-      const newWarningToast = toast({
-        title: "⚠️ API Limitation Notice",
-        description: "Evaluation results may not always be consistent because the free-tier Gemini API has token limits and may generate hallucinations.",
-        className: "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 [&_*]:text-white",
-        duration: Infinity, // Persist until manually dismissed
-      });
-      setWarningToast(newWarningToast);
-    }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!query.trim()) {
       toast({
-        title: "Empty Query",
-        description: "Please enter a SQL query before submitting.",
+        title: "Empty Solution",
+        description: "Please write your SQL solution before submitting.",
         variant: "destructive",
       });
       return;
     }
 
     if (buttonState === 'disabled') {
-      return; // Prevent multiple submissions
+      return;
     }
 
-    // Dismiss the warning toast if it exists
-    if (warningToast) {
-      warningToast.dismiss();
-      setWarningToast(null);
-    }
-
-    // Set loading state
     setButtonState('loading');
 
-    // Simulate server processing with 1.5 second delay
-    setTimeout(() => {
-      const result = evaluateQuery(query);
-      setEvaluationResult(result);
+    try {
+      const response = await fetch(`${BASE_URL}/generate-mcqs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          question: question, 
+          userSolution: query 
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to generate MCQs');
+
+      const data: MCQResponse = await response.json();
+      setMcqs(data.mcqs);
+      setShowMcqs(true);
       setButtonState('completed');
-      setShowResultModal(true);
       
-      // After showing completion, disable the button permanently
+      toast({
+        title: "MCQs Generated! ✨",
+        description: "Answer the questions below to test your understanding.",
+      });
+    } catch (error) {
+      console.error('Error generating MCQs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate MCQs. Please try again.",
+        variant: "destructive",
+      });
+      setButtonState('default');
+    }
+  };
+
+  const handleMCQSubmit = () => {
+    if (Object.keys(userAnswers).length !== mcqs.length) {
+      toast({
+        title: "Incomplete",
+        description: "Please answer all questions before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmittedAnswers(true);
+    
+    const correctCount = mcqs.reduce((count, mcq, index) => {
+      const selectedOption = mcq.options.find(opt => opt.id === userAnswers[index]);
+      return selectedOption?.isCorrect ? count + 1 : count;
+    }, 0);
+
+    const encouragingMessages = [
+      "Excellent! Well done! 🎉",
+      "Perfect! You got it right! ✨",
+      "Amazing work! Keep it up! 🌟",
+      "Brilliant! You're on fire! 🔥"
+    ];
+
+    const supportiveMessages = [
+      "Good try! Keep learning! 💪",
+      "Nice effort! Practice makes perfect! 📚",
+      "Keep going! You're improving! 🌱",
+      "Great attempt! Don't give up! 💫"
+    ];
+
+    mcqs.forEach((mcq, index) => {
+      const selectedOption = mcq.options.find(opt => opt.id === userAnswers[index]);
+      const isCorrect = selectedOption?.isCorrect;
+      
+      const message = isCorrect 
+        ? encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)]
+        : supportiveMessages[Math.floor(Math.random() * supportiveMessages.length)];
+
       setTimeout(() => {
-        setButtonState('disabled');
-      }, 2000);
-    }, 1500);
+        toast({
+          title: `Question ${index + 1}`,
+          description: message,
+          className: isCorrect 
+            ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 [&_*]:text-white"
+            : "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 [&_*]:text-white",
+        });
+      }, index * 500);
+    });
+
+    setButtonState('disabled');
   };
 
   const handleClear = () => {
     if (buttonState === 'loading') {
-      return; // Don't allow clearing while evaluating
+      return;
     }
     
     setQuery('');
     setButtonState('default');
-    setEvaluationResult(null);
+    setMcqs([]);
+    setUserAnswers({});
+    setShowMcqs(false);
+    setSubmittedAnswers(false);
+    
     toast({
       title: "Editor Cleared",
       description: "The query editor has been cleared.",
-      className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0",
     });
   };
 
@@ -172,20 +170,20 @@ WHERE salary > 50000;`);
         return (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Evaluating...
+            Generating MCQs...
           </>
         );
       case 'completed':
         return (
           <>
             <CheckCircle className="h-4 w-4" />
-            Evaluated!
+            Submitted!
           </>
         );
       case 'disabled':
         return 'Submitted';
       default:
-        return 'Submit & Evaluate';
+        return 'Submit';
     }
   };
 
@@ -228,29 +226,90 @@ WHERE salary > 50000;`);
         </div>
         
         <div className="flex gap-3 pt-2">
-          <Button 
-            onClick={handleSubmit}
-            disabled={buttonState === 'loading' || buttonState === 'disabled'}
-            className={getButtonClassName()}
-          >
-            {getButtonContent()}
-          </Button>
-          <Button 
-            onClick={handleClear}
-            disabled={buttonState === 'loading'}
-            variant="outline"
-            className="border-blue-600 text-blue-400 hover:bg-blue-600/10 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Clear Editor
-          </Button>
+          {!showMcqs ? (
+            <>
+              <Button 
+                onClick={handleSubmit}
+                disabled={buttonState === 'loading' || buttonState === 'completed' || buttonState === 'disabled'}
+                className={getButtonClassName()}
+              >
+                {getButtonContent()}
+              </Button>
+              <Button 
+                onClick={handleClear}
+                disabled={buttonState === 'loading'}
+                variant="outline"
+                className="border-blue-600 text-blue-400 hover:bg-blue-600/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Clear Editor
+              </Button>
+            </>
+          ) : null}
         </div>
+
+        {showMcqs && mcqs.length > 0 && (
+          <div className="mt-6 space-y-6">
+            <div className="flex items-center gap-2 text-white">
+              <Sparkles className="h-5 w-5 text-blue-400" />
+              <h3 className="text-lg font-semibold">Test Your Understanding</h3>
+            </div>
+
+            {mcqs.map((mcq, mcqIndex) => (
+              <Card key={mcqIndex} className="bg-slate-700/50 border-slate-600">
+                <CardContent className="pt-6 space-y-4">
+                  <p className="text-white font-medium">
+                    {mcqIndex + 1}. {mcq.question}
+                  </p>
+
+                  <RadioGroup
+                    value={userAnswers[mcqIndex]}
+                    onValueChange={(value) => {
+                      if (!submittedAnswers) {
+                        setUserAnswers(prev => ({ ...prev, [mcqIndex]: value }));
+                      }
+                    }}
+                    disabled={submittedAnswers}
+                  >
+                    {mcq.options.map((option) => (
+                      <div key={option.id} className="flex items-center space-x-2">
+                        <RadioGroupItem 
+                          value={option.id} 
+                          id={`mcq-${mcqIndex}-${option.id}`}
+                          disabled={submittedAnswers}
+                        />
+                        <Label
+                          htmlFor={`mcq-${mcqIndex}-${option.id}`}
+                          className={`text-slate-300 cursor-pointer ${submittedAnswers ? 'cursor-not-allowed' : ''}`}
+                        >
+                          {option.text}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            ))}
+
+            {!submittedAnswers && (
+              <Button
+                onClick={handleMCQSubmit}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium"
+              >
+                <Heart className="h-4 w-4 mr-2" />
+                Submit Answers
+              </Button>
+            )}
+
+            {submittedAnswers && (
+              <div className="text-center p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                <p className="text-slate-300 text-sm">
+                  ✨ Correct answers and explanations will be revealed at 8 PM
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
-      
-      <SQLEvaluationModal
-        isOpen={showResultModal}
-        onClose={() => setShowResultModal(false)}
-        result={evaluationResult}
-      />
     </Card>
   );
 };
