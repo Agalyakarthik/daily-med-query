@@ -45,6 +45,41 @@ const PostgreSQLEditor = ({ question = "Default medical query" }: PostgreSQLEdit
     setQuery(value);
   };
 
+  const generateDummyMCQs = (): MCQ[] => {
+    return [
+      {
+        question: "What is the primary purpose of using JOINs in SQL?",
+        options: [
+          { id: "a", text: "To combine rows from multiple tables based on related columns", isCorrect: true },
+          { id: "b", text: "To delete duplicate records from a table", isCorrect: false },
+          { id: "c", text: "To sort data in ascending order", isCorrect: false },
+          { id: "d", text: "To create new database tables", isCorrect: false }
+        ],
+        explanation: "JOINs are used to combine rows from two or more tables based on a related column between them."
+      },
+      {
+        question: "Which SQL clause is used to filter results based on conditions?",
+        options: [
+          { id: "a", text: "ORDER BY", isCorrect: false },
+          { id: "b", text: "GROUP BY", isCorrect: false },
+          { id: "c", text: "WHERE", isCorrect: true },
+          { id: "d", text: "HAVING", isCorrect: false }
+        ],
+        explanation: "The WHERE clause is used to filter records based on specific conditions."
+      },
+      {
+        question: "What does the AVG() function do in SQL?",
+        options: [
+          { id: "a", text: "Counts the number of rows", isCorrect: false },
+          { id: "b", text: "Calculates the average value of a numeric column", isCorrect: true },
+          { id: "c", text: "Finds the maximum value", isCorrect: false },
+          { id: "d", text: "Sums all values", isCorrect: false }
+        ],
+        explanation: "AVG() is an aggregate function that returns the average value of a numeric column."
+      }
+    ];
+  };
+
   const handleSubmit = async () => {
     if (!query.trim()) {
       toast({
@@ -61,20 +96,10 @@ const PostgreSQLEditor = ({ question = "Default medical query" }: PostgreSQLEdit
 
     setButtonState('loading');
 
-    try {
-      const response = await fetch(`${BASE_URL}/generate-mcqs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          question: question, 
-          userSolution: query 
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate MCQs');
-
-      const data: MCQResponse = await response.json();
-      setMcqs(data.mcqs);
+    // Simulate API call with delay
+    setTimeout(() => {
+      const dummyMCQs = generateDummyMCQs();
+      setMcqs(dummyMCQs);
       setShowMcqs(true);
       setButtonState('completed');
       
@@ -82,15 +107,7 @@ const PostgreSQLEditor = ({ question = "Default medical query" }: PostgreSQLEdit
         title: "MCQs Generated! ✨",
         description: "Answer the questions below to test your understanding.",
       });
-    } catch (error) {
-      console.error('Error generating MCQs:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate MCQs. Please try again.",
-        variant: "destructive",
-      });
-      setButtonState('default');
-    }
+    }, 1500);
   };
 
   const handleMCQSubmit = () => {
